@@ -1,0 +1,128 @@
+\section{Marco teórico}
+
+\subsection{Antecedentes teóricos}
+
+El marco teórico de este proyecto reúne los conceptos que permiten relacionar una interfaz conversacional con una fuente de documentación controlada. La solución propuesta no se limita a consumir un modelo de lenguaje; requiere una cadena de procesamiento en la que la pregunta se valide, el conocimiento relevante se recupere, el contexto se entregue al modelo y la respuesta se devuelva con información suficiente para revisarla.
+
+La arquitectura se analiza desde cuatro perspectivas. La primera es la inteligencia artificial generativa, que produce una respuesta a partir de una instrucción. La segunda es la recuperación semántica, que localiza fragmentos relacionados con la pregunta. La tercera es la ingeniería de software, que organiza el frontend, backend y contratos de comunicación. La cuarta es la confiabilidad, que incluye fuentes, guardrails, manejo de errores y evaluación.
+
+Los antecedentes teóricos se relacionan directamente con las etapas del sistema: preparación del conocimiento, recepción de la pregunta, recuperación de información, generación de la respuesta y validación del resultado. La siguiente tabla resume esa relación y permite identificar qué aporta cada concepto al diseño del copiloto.
+
+\renewcommand{\arraystretch}{1.25}
+\begin{longtable}{p{3.4cm}p{5.0cm}p{5.5cm}}
+\caption{Antecedentes teóricos y relación con el proyecto.}\label{tab:antecedentes-teoricos}\\\toprule
+\textbf{Antecedente teórico} & \textbf{Concepto principal} & \textbf{Relación con el copiloto documental}\\\midrule
+\endfirsthead
+\toprule
+\textbf{Antecedente teórico} & \textbf{Concepto principal} & \textbf{Relación con el copiloto documental}\\\midrule
+\endhead
+\bottomrule
+\endfoot
+Inteligencia artificial generativa & Modelos capaces de interpretar instrucciones y producir texto. & Permite redactar una respuesta comprensible a partir de la pregunta y del contexto documental recuperado.\\
+Recuperación aumentada por generación & Integración de búsqueda de información y generación de lenguaje. & Evita que la respuesta dependa únicamente del conocimiento general del modelo y permite fundamentarla con fragmentos.\\
+Embeddings y similitud semántica & Representación vectorial de textos y comparación por cercanía. & Permite localizar fragmentos relacionados aunque la pregunta utilice palabras diferentes a las del documento.\\
+Metadatos y trazabilidad & Datos que describen el origen, ubicación y versión de un fragmento. & Hace posible mostrar el archivo, página, sección, identificador y puntuación de los resultados.\\
+Agentes y toma de decisiones & Flujo compuesto por estados, condiciones y acciones. & Organiza la validación, la recuperación, la generación, el rechazo por falta de contexto y el escalamiento.\\
+Servicios web y contratos de datos & Comunicación entre componentes mediante solicitudes y respuestas estructuradas. & Define cómo el frontend envía la pregunta y cómo recibe el texto, las fuentes y el estado de la operación.\\
+Evaluación y confiabilidad & Medición de relevancia, fidelidad, claridad, errores y límites de uso. & Permite determinar si las respuestas son útiles, verificables y adecuadas para el dominio técnico.\\
+\end{longtable}
+
+El cuadro muestra que la solución no depende de un único concepto. La generación aporta la capacidad de redactar, pero la recuperación aporta el conocimiento específico; los metadatos permiten verificarlo y la evaluación establece si el resultado es aceptable. Esta relación será utilizada como guía para documentar el desarrollo y las pruebas posteriores.
+
+\subsection{Inteligencia artificial generativa y modelos de lenguaje}
+
+La inteligencia artificial generativa comprende métodos capaces de crear contenido a partir de patrones aprendidos. En el caso de los modelos de lenguaje, el contenido se produce mediante la predicción y organización de unidades de texto. Estos modelos pueden interpretar preguntas, seguir instrucciones, resumir información y producir respuestas con diferentes estilos.
+
+Una característica importante es que el modelo no consulta automáticamente los procedimientos internos de una organización. Su conocimiento depende de los datos con los que fue entrenado y de la información que se le proporcione durante la solicitud. Por esta razón, una aplicación técnica debe separar la capacidad lingüística del modelo de la autoridad documental de la organización.
+
+El prompt cumple la función de establecer el contexto y las reglas. Puede indicar el papel del agente, el formato de la respuesta, la obligación de utilizar únicamente los fragmentos proporcionados y la acción que debe realizarse cuando el contexto no sea suficiente. Sin embargo, un prompt por sí solo no garantiza que la respuesta sea correcta; debe combinarse con recuperación, metadatos y evaluación.
+
+\subsection{Recuperación aumentada por generación}
+
+La recuperación aumentada por generación, conocida como RAG, es un enfoque que combina una etapa de recuperación de información con una etapa de generación de texto. La pregunta se utiliza para localizar fragmentos relacionados y esos fragmentos se incorporan a la solicitud que recibe el modelo. La respuesta se construye entonces con base en el contexto recuperado, en lugar de depender únicamente del conocimiento general del modelo \citep{lewis2020rag,gao2023rag}.
+
+El flujo RAG puede dividirse en una fase de preparación y una fase de consulta. En la preparación se recopilan los documentos, se extrae su texto, se dividen en fragmentos y se calcula un embedding para cada fragmento. En la consulta se calcula el embedding de la pregunta, se comparan vectores, se seleccionan los resultados con mayor similitud y se prepara el prompt. Esta separación permite actualizar el corpus sin reentrenar el modelo generativo.
+
+La calidad de un sistema RAG depende de más factores que el modelo. Un fragmento demasiado grande puede contener información irrelevante; uno demasiado pequeño puede perder el contexto necesario. La selección de \texttt{top\_k} también influye: pocos fragmentos pueden omitir información, mientras que demasiados pueden hacer que el prompt sea extenso o confuso. Por lo tanto, la configuración debe probarse con preguntas representativas del dominio.
+
+\subsection{Fragmentación de documentos}
+
+La fragmentación, o división en chunks, transforma un documento extenso en unidades que pueden indexarse y recuperarse. La estrategia debe conservar la relación entre el texto y su ubicación original. Un fragmento puede corresponder a un párrafo, una sección, una lista o una combinación controlada de varios elementos.
+
+El tamaño del fragmento debe equilibrar detalle y contexto. El solapamiento entre fragmentos puede evitar que una idea quede dividida entre dos unidades sin relación, pero también aumenta el número de vectores almacenados. La estrategia seleccionada debe considerar el tipo de documento, la longitud de los procedimientos, los títulos y la presencia de tablas o listas.
+
+Los metadatos son tan importantes como el texto. Para este proyecto se requiere conservar al menos el identificador del fragmento, el contenido, el archivo de origen, el número de página, la sección y la puntuación obtenida en la búsqueda. También pueden agregarse versión, fecha de actualización, área responsable y tipo de documento.
+
+\subsection{Embeddings y búsqueda semántica}
+
+Un embedding representa un texto como un vector numérico dentro de un espacio en el que los textos con significado parecido tienden a estar próximos. La pregunta del usuario y los fragmentos documentales deben transformarse utilizando un proceso compatible para que la comparación sea significativa.
+
+La similitud puede calcularse mediante distancia coseno, producto punto u otra métrica soportada por el motor vectorial. La función de búsqueda recibe una pregunta y el valor de \texttt{top\_k}, y devuelve los fragmentos ordenados por su puntuación. El backend debe conservar esa puntuación para que el sistema pueda establecer un umbral de suficiencia y explicar por qué seleccionó un resultado.
+
+La búsqueda semántica no debe interpretarse como una prueba absoluta de verdad. Un fragmento puede ser similar a la pregunta y, aun así, no contener la respuesta completa. Por ello, el agente debe revisar la suficiencia del contexto, utilizar instrucciones de no invención y permitir que el usuario consulte la fuente original.
+
+\subsection{Bases de datos vectoriales y metadatos}
+
+Una base de datos vectorial almacena embeddings junto con los datos que describen a cada registro. PostgreSQL con una extensión vectorial es una alternativa para mantener en un mismo sistema el contenido, los metadatos y el vector. Esto permite consultar fragmentos por similitud y filtrar por documento, sección, versión o área.
+
+La tabla documental debe diseñarse para que los cambios puedan rastrearse. Un registro puede tener un identificador único, texto del fragmento, vector, archivo de origen, página, sección, fecha de carga y versión. Si un documento deja de estar vigente, se debe poder marcarlo o retirarlo sin perder el historial necesario para comprender una prueba anterior.
+
+La carga de embeddings y la función de búsqueda semántica pertenecen a la integración documental. En este proyecto se deja establecido el contrato que necesita el agente para consumir esa función, pero los datos finales deben provenir del corpus autorizado y del trabajo correspondiente del Integrante 1.
+
+\subsection{Modelos externos de inteligencia artificial}
+
+El modelo externo se consume mediante una solicitud HTTPS. La aplicación envía un prompt compuesto por instrucciones, pregunta y contexto recuperado, y recibe una respuesta generada. La documentación de Gemini describe modelos que reciben contenido y devuelven candidatos de respuesta a través de una API generativa \citep{googleGeminiApi}. Un proveedor equivalente puede utilizarse siempre que respete el contrato del backend.
+
+La integración debe contemplar errores de autenticación, modelo inexistente, límite de solicitudes, contenido rechazado, tiempos de espera y fallos de red. El backend debe transformar esos casos en estados comprensibles para el frontend, sin mostrar la clave ni datos sensibles en los mensajes.
+
+\subsection{Agentes y orquestación de flujos}
+
+Un agente coordina herramientas y pasos para resolver una pregunta. En el flujo propuesto, el agente recibe la consulta, determina si pertenece al dominio, solicita los fragmentos relevantes, construye el contexto, consulta al modelo y revisa la respuesta. La salida debe incluir el texto y la evidencia utilizada.
+
+La orquestación puede representarse como una secuencia o como un grafo de estados y transiciones. Por ejemplo, después de la búsqueda puede existir una condición que dirija el flujo hacia la generación si hay suficiente información o hacia una respuesta de incertidumbre si no la hay. En la implementación, este comportamiento puede apoyarse en bibliotecas de orquestación como LangChain y LangGraph, pero el fundamento teórico es la separación de estados, decisiones y responsabilidades \citep{langchainDocs,langgraphDocs}.
+
+La orquestación no elimina la necesidad de un backend. El servicio web sigue funcionando como la frontera de la aplicación, controla la entrada, protege la configuración y devuelve el contrato que utiliza el frontend. La lógica del agente se ubica dentro de una capa independiente para que pueda probarse y sustituirse sin modificar la interfaz.
+
+\subsection{Servicios web, contratos de comunicación y control de origen}
+
+Una API REST (Representational State Transfer) expone operaciones mediante rutas HTTP. Un framework de backend como FastAPI permite definir modelos de entrada con tipos, validar solicitudes y producir documentación interactiva a partir del esquema OpenAPI \citep{fastapiDocs}. El servidor de aplicación ejecuta estas rutas durante el desarrollo y el despliegue.
+
+La ruta principal del proyecto es \texttt{POST /chat}. La solicitud recibe un objeto JSON con la propiedad \texttt{message}. El backend valida que la propiedad exista y que su contenido sea utilizable. Después procesa la pregunta y devuelve un objeto que puede incluir \texttt{reply}, \texttt{sources} y \texttt{status}.
+
+El navegador aplica la política de mismo origen. Si el frontend y el backend se ejecutan en puertos diferentes, la solicitud puede ser bloqueada aunque ambos procesos estén activos. CORS permite declarar los orígenes autorizados, métodos y encabezados que pueden utilizarse. En producción, la lista debe ser más restrictiva que durante el desarrollo.
+
+\subsection{Variables de entorno y protección de credenciales}
+
+Una variable de entorno permite configurar una aplicación sin escribir el secreto directamente en el código. La clave del proveedor y el nombre del modelo deben leerse en el backend. El archivo `.env` debe agregarse al archivo de exclusión de Git y nunca debe enviarse al repositorio.
+
+El frontend no debe intentar comunicarse directamente con el proveedor de IA porque eso expondría la clave en el navegador. La API propia actúa como intermediaria, aplica validaciones, registra estados y puede añadir guardrails antes de enviar la solicitud.
+
+\subsection{Guardrails, fuentes y evaluación}
+
+Los guardrails son reglas que limitan o revisan el comportamiento del agente. En el proyecto deben cubrir preguntas fuera del dominio, ausencia de contexto, respuestas que no coincidan con las fuentes, errores del proveedor y solicitudes que requieran intervención humana. El agente debe preferir indicar ``no se encontró información suficiente'' antes que completar una instrucción mediante una suposición.
+
+Las fuentes deben mostrar al menos el archivo, la página, la sección, el identificador del fragmento y la puntuación. Esto permite revisar la respuesta y comparar el texto generado con el material original. En una etapa posterior también se pueden incluir enlaces internos, versiones y fechas de vigencia.
+
+La evaluación debe medir relevancia de la recuperación, exactitud de la respuesta, cobertura de las preguntas, fidelidad al contexto, claridad, latencia y comportamiento ante errores. El marco de gestión de riesgos de IA del Instituto Nacional de Estándares y Tecnología (NIST, National Institute of Standards and Technology) propone considerar confiabilidad, transparencia, seguridad y responsabilidad \citep{nistAirmf}.
+
+\subsection{Temas tentativos para el marco teórico}
+
+Los siguientes temas quedan propuestos para la revisión del marco teórico. Cada uno se delimita por su relación con el problema, de modo que no se presente únicamente como una lista de tecnologías utilizadas:
+
+\begin{enumerate}
+    \item \textbf{Inteligencia artificial generativa y modelos de lenguaje:} principios de generación de texto, interpretación de instrucciones, límites del conocimiento aprendido y necesidad de proporcionar contexto.
+    \item \textbf{Recuperación aumentada por generación:} etapas de preparación y consulta, relación entre recuperación y generación, ventajas, riesgos y criterios de suficiencia del contexto.
+    \item \textbf{Procesamiento de documentos técnicos:} extracción, limpieza, normalización y conservación de la estructura necesaria para consultar procedimientos.
+    \item \textbf{Fragmentación y solapamiento:} criterios para dividir documentos, tamaño de los fragmentos, preservación del contexto y efecto del solapamiento en la recuperación.
+    \item \textbf{Embeddings y métricas de similitud:} representación vectorial, comparación de textos, puntuaciones, ordenamiento de resultados y umbrales de aceptación.
+    \item \textbf{Almacenamiento vectorial:} organización de vectores, contenido y metadatos; filtros por documento, versión, sección o área responsable.
+    \item \textbf{Metadatos, versiones y trazabilidad documental:} identificación del fragmento, archivo de origen, página, sección, vigencia y relación entre respuesta y evidencia.
+    \item \textbf{Ingeniería de prompts y construcción de contexto:} instrucciones del agente, formato de salida, delimitación del contexto, citas y respuesta ante información insuficiente.
+    \item \textbf{Agentes y orquestación de flujos:} estados, decisiones, recuperación, generación, guardrails, respuesta de incertidumbre y escalamiento a una persona responsable.
+    \item \textbf{Servicios web y contratos de datos:} rutas, validación, solicitudes y respuestas estructuradas para comunicar la interfaz con el backend.
+    \item \textbf{Comunicación entre capas y control de origen:} intercambio de datos, JSON, CORS, autenticación básica y protección de credenciales.
+    \item \textbf{Guardrails y prevención de respuestas no sustentadas:} restricciones de dominio, detección de falta de contexto, manejo de errores y prevención de alucinaciones.
+    \item \textbf{Evaluación de sistemas RAG:} relevancia de recuperación, fidelidad al contexto, exactitud, claridad, cobertura, latencia y comportamiento ante fallos.
+\end{enumerate}
+
+La selección anterior mantiene el marco teórico centrado en los conceptos que explican el problema y la solución. Las bibliotecas, lenguajes y servicios específicos se documentarán posteriormente en el capítulo de desarrollo como decisiones de implementación, no como temas independientes del marco teórico.
