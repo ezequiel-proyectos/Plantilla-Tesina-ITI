@@ -33,7 +33,15 @@ reales; evita depender solo de blogs.
 \textbf{Cómo se revisa:} pertinencia de las fuentes, análisis crítico y conexión explícita con el problema.
 \end{guia}
 
-% >>> ESCRIBE AQUÍ los antecedentes del problema <<<
+La consulta de documentación técnica ha evolucionado desde la revisión manual de archivos hasta los buscadores capaces de localizar palabras dentro de varios documentos. Aunque la búsqueda literal reduce el tiempo de consulta, depende de que el usuario conozca los mismos términos que aparecen en el material. Esta limitación es relevante cuando una pregunta se formula con lenguaje cotidiano y el procedimiento utiliza una terminología especializada.
+
+Los sistemas conversacionales han permitido consultar información mediante preguntas en lenguaje natural. Sin embargo, un chatbot sin conexión con el corpus de la organización puede responder con conocimiento general, mezclar conceptos o no distinguir entre una recomendación y un procedimiento autorizado. Los modelos de lenguaje mejoran la redacción, pero no garantizan por sí solos la trazabilidad de las fuentes.
+
+La recuperación aumentada por generación propone buscar fragmentos antes de solicitar la respuesta al modelo. El trabajo de Lewis et al. presenta esta combinación para tareas intensivas en conocimiento, mientras que Gao et al. revisan sus componentes, ventajas y retos \cite{lewis2020rag,gao2023rag}. Estas propuestas muestran que la calidad depende tanto de la recuperación como de la generación.
+
+En el contexto empresarial, las plataformas de documentación técnica y los servicios de modelos externos permiten centralizar la consulta, pero requieren controles sobre credenciales, versiones y fuentes. La documentación oficial de FastAPI describe la validación y exposición de servicios web, mientras que la documentación de Gemini describe el consumo de un modelo generativo mediante una API \cite{fastapiDocs,googleGeminiApi}. La propuesta de este proyecto toma esos principios y los delimita a los documentos autorizados de CII.IA.
+
+El aspecto que permanece sin resolver es la integración de una interfaz sencilla, un backend controlado, recuperación semántica y evidencia documental en un mismo flujo. El copiloto propuesto atiende esa brecha al separar la conversación de la fuente de conocimiento y establecer un contrato para devolver fragmentos, metadatos y puntuaciones.
 
 
 \subsection{Antecedentes de la empresa} \label{sec:antecedentes_empresa} % audit:req=antecedentes_empresa
@@ -59,7 +67,13 @@ datos personales.
 \textbf{Cómo se revisa:} que se entienda el contexto operativo real del proyecto.
 \end{guia}
 
-% >>> ESCRIBE AQUÍ los antecedentes de la empresa <<<
+El Centro de Innovación Industrial en Inteligencia Artificial (CII.IA) es una organización ubicada en Monterrey, Nuevo León, México, orientada a la aplicación y escalamiento de soluciones de inteligencia artificial para la industria. Su actividad relaciona la identificación de necesidades con el diseño, prototipado, validación y posible escalamiento de soluciones tecnológicas \cite{ciiia2026,ciiia2026b}.
+
+El proyecto se vincula con el área de desarrollo de soluciones de inteligencia artificial y software, donde la documentación técnica sirve para comunicar decisiones, procedimientos, configuraciones y resultados. El asesor empresarial es la Dra. Ludivina Facundo Flores, quien acompaña el desarrollo desde el organismo receptor.
+
+Actualmente, la consulta de información técnica puede requerir localizar archivos, revisar diferentes versiones y comparar manualmente fragmentos. El copiloto propuesto busca apoyar ese proceso mediante una pregunta en lenguaje natural, una API que coordine la solicitud y una respuesta relacionada con las fuentes documentales. La herramienta no sustituye a la persona responsable ni convierte una respuesta generada en una instrucción oficial.
+
+La solución es congruente con un ambiente de innovación porque puede evolucionar junto con el corpus institucional. En una primera etapa se valida la comunicación entre interfaz, backend y modelo; posteriormente pueden incorporarse documentos, embeddings, filtros por versión y reglas de evaluación.
 
 
 \subsection{Antecedentes teóricos} \label{sec:antecedentes_teoricos} % audit:req=antecedentes_teoricos
@@ -78,7 +92,15 @@ tu proyecto? ¿qué fuentes los respaldan?
 \textbf{Cómo se revisa:} pertinencia y suficiencia de los conceptos, y calidad de las citas.
 \end{guia}
 
-% >>> ESCRIBE AQUÍ los antecedentes teóricos <<<
+Los antecedentes teóricos del proyecto relacionan inteligencia artificial generativa, recuperación de información e ingeniería de software. La inteligencia artificial generativa permite interpretar instrucciones y producir texto, pero su respuesta depende del contexto que reciba. Por ello, el modelo debe utilizarse como generador y no como única autoridad documental.
+
+La recuperación aumentada por generación (RAG) combina una etapa de búsqueda con una etapa de generación. Primero se procesan los documentos, se dividen en fragmentos y se transforma cada fragmento en un embedding. Después, la pregunta se transforma de manera compatible, se comparan vectores y se seleccionan los fragmentos más relevantes para construir el contexto de la solicitud \cite{lewis2020rag,gao2023rag}.
+
+Los metadatos permiten conservar el identificador del fragmento, el archivo de origen, la página, la sección y la puntuación de similitud. Estos datos son necesarios para revisar la respuesta y distinguir entre una evidencia documental y una explicación general. El almacenamiento vectorial puede organizar el contenido, los metadatos y los embeddings para permitir búsquedas y filtros posteriores.
+
+El flujo también requiere servicios web, contratos JSON, validación de solicitudes y control de origen. FastAPI proporciona un marco para declarar rutas y modelos de datos, mientras que CORS regula la comunicación entre el frontend y el backend cuando se ejecutan en orígenes diferentes \cite{fastapiDocs}. Las variables de entorno permiten proteger las claves del proveedor externo.
+
+Finalmente, los guardrails establecen qué debe ocurrir cuando la pregunta está fuera del dominio, no se encuentra contexto suficiente o el proveedor falla. La respuesta debe mostrar fuentes cuando existan y comunicar la incertidumbre cuando no pueda sustentarse. La evaluación debe considerar relevancia, fidelidad al contexto, claridad, latencia y comportamiento ante errores \cite{nistAirmf}.
 
 
 \subsubsection{Tabla comparativa de antecedentes} \label{subsec:tabla_comparativa_antecedentes} % audit:req=tabla_comparativa
@@ -119,4 +141,22 @@ significativos.
 %     \bottomrule
 %   \end{tabular}
 % \end{table}
-% >>> ESCRIBE AQUÍ el análisis de la tabla comparativa (cítala con Tabla~\ref{tab:comparativa_antecedentes}) <<<
+La Tabla~\ref{tab:comparativa_antecedentes} compara alternativas para consultar documentación técnica. La búsqueda manual conserva el documento completo, pero consume tiempo; la búsqueda literal es rápida, aunque depende de las palabras exactas; un chatbot sin recuperación ofrece una interacción natural, pero no garantiza fuentes. La propuesta RAG combina lenguaje natural, recuperación semántica y metadatos, por lo que ofrece un equilibrio entre facilidad de consulta y trazabilidad.
+
+\begin{table}[H]
+\centering
+\caption{Comparación de antecedentes y relación con la propuesta.}
+\label{tab:comparativa_antecedentes}
+\small
+\begin{tabular}{@{}p{3.1cm}p{3.6cm}p{3.6cm}p{3.5cm}@{}}
+\toprule
+\textbf{Alternativa} & \textbf{Aportación} & \textbf{Ventaja} & \textbf{Limitación} \\
+\midrule
+Búsqueda manual & Revisión directa de documentos técnicos. & Permite consultar el contexto completo. & Consume tiempo y depende de conocer dónde buscar. \\
+Búsqueda por palabras & Localización literal de coincidencias. & Es sencilla y rápida en archivos pequeños. & No comprende sinónimos ni significado contextual. \\
+Chatbot sin RAG & Generación de respuestas conversacionales. & Facilita la interacción en lenguaje natural. & Puede utilizar información externa o inventar fuentes. \\
+Sistemas RAG \cite{lewis2020rag,gao2023rag} & Recuperación de fragmentos antes de generar. & Relaciona la respuesta con un corpus específico. & Depende de la ingesta, los embeddings y el umbral de similitud. \\
+\textbf{Propuesta de este trabajo} & Copiloto documental con API, recuperación y fuentes. & Integra pregunta natural, contexto y trazabilidad. & Requiere corpus autorizado, pruebas y revisión humana. \\
+\bottomrule
+\end{tabular}
+\end{table}

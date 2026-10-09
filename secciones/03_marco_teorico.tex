@@ -32,7 +32,61 @@ citar; temas que luego no se usan en el desarrollo.
 propuesta.
 \end{guia}
 
-% >>> REVISIÓN 2: ESCRIBE AQUÍ el marco teórico (introducción breve y una \subsection por tema) <<<
+El marco teórico reúne los conceptos necesarios para comprender cómo una interfaz conversacional puede consultar documentación técnica controlada. La solución no se limita a consumir un modelo de lenguaje: requiere preparar el conocimiento, recibir la pregunta, recuperar información relevante, construir un contexto, generar una respuesta y validar el resultado.
+
+\subsection{Inteligencia artificial generativa y modelos de lenguaje}
+
+La inteligencia artificial generativa comprende métodos capaces de crear contenido a partir de patrones aprendidos. En los modelos de lenguaje, la respuesta se construye mediante la predicción y organización de unidades de texto. Estos modelos pueden interpretar preguntas, seguir instrucciones, resumir información y producir explicaciones con diferentes estilos.
+
+El modelo no consulta automáticamente los procedimientos internos de una organización. Su conocimiento depende de los datos de entrenamiento y de la información proporcionada durante la solicitud. Por esta razón, el sistema debe separar la capacidad lingüística del modelo de la autoridad documental de la organización. El prompt puede establecer el papel del agente, el formato de salida y la obligación de declarar cuando no exista contexto suficiente.
+
+\subsection{Recuperación aumentada por generación}
+
+La recuperación aumentada por generación, conocida como RAG, combina una etapa de recuperación de información con una etapa de generación de texto. La pregunta se utiliza para localizar fragmentos relacionados y esos fragmentos se incorporan a la solicitud que recibe el modelo. La respuesta se construye con base en el contexto recuperado, en lugar de depender únicamente del conocimiento general del modelo \cite{lewis2020rag,gao2023rag}.
+
+El flujo RAG puede dividirse en preparación y consulta. En la preparación se recopilan documentos, se extrae su texto, se divide en fragmentos y se calcula un embedding para cada uno. En la consulta se calcula el embedding de la pregunta, se comparan vectores, se seleccionan resultados y se prepara el contexto. La calidad depende del tamaño de los fragmentos, el solapamiento, el valor de \texttt{top\_k}, el prompt y la evaluación.
+
+\subsection{Procesamiento y fragmentación de documentos}
+
+La fragmentación transforma un documento extenso en unidades que pueden indexarse y recuperarse. La estrategia debe conservar la relación entre el texto y su ubicación original. Un fragmento puede corresponder a un párrafo, una sección, una lista o una combinación controlada de elementos.
+
+El tamaño debe equilibrar detalle y contexto. Un fragmento demasiado grande puede incluir información irrelevante; uno demasiado pequeño puede perder el sentido de una instrucción. El solapamiento puede evitar que una idea quede dividida entre dos unidades, aunque también aumenta el número de vectores almacenados. La estrategia debe considerar títulos, procedimientos, tablas y listas.
+
+\subsection{Embeddings y búsqueda semántica}
+
+Un embedding representa un texto como un vector numérico dentro de un espacio donde los textos con significado parecido tienden a estar próximos. La pregunta y los fragmentos deben transformarse mediante un proceso compatible para que la comparación sea significativa. La similitud puede calcularse mediante distancia coseno, producto punto u otra métrica soportada por el motor vectorial.
+
+La función de búsqueda recibe una pregunta y el valor de \texttt{top\_k}, y devuelve fragmentos ordenados por puntuación. Cada resultado debe conservar al menos \texttt{chunk\_id}, contenido, archivo de origen, página, sección y \texttt{score}. La similitud no es una prueba absoluta de verdad; el agente debe revisar la suficiencia del contexto y permitir que el usuario consulte la fuente original.
+
+\subsection{Almacenamiento vectorial, metadatos y trazabilidad}
+
+Una base vectorial almacena embeddings junto con los datos que describen cada registro. PostgreSQL con capacidades vectoriales puede conservar en un mismo sistema el contenido, los metadatos y el vector. Esto permite consultar fragmentos por similitud y filtrar por documento, sección, versión o área responsable.
+
+Los metadatos permiten rastrear cada respuesta. Un registro puede incluir un identificador único, texto, vector, archivo de origen, página, sección, fecha de carga y versión. Si un documento deja de estar vigente, debe poder marcarse o retirarse sin perder el historial necesario para comprender una prueba anterior.
+
+\subsection{Ingeniería de prompts y construcción de contexto}
+
+El prompt establece las instrucciones con las que el modelo interpreta la pregunta y el contexto recuperado. En este proyecto debe indicar que la respuesta se base en los fragmentos recibidos, que diferencie evidencia de explicación y que declare la falta de información cuando los resultados no sean suficientes.
+
+La construcción del contexto debe evitar incluir fragmentos irrelevantes o exceder la capacidad del modelo. También debe conservar una relación clara entre cada afirmación y sus fuentes. Por ello, el backend debe estructurar la pregunta, los fragmentos, las reglas de respuesta y el formato de salida antes de llamar al proveedor externo.
+
+\subsection{Agentes y orquestación de flujos}
+
+Un agente coordina estados, condiciones y acciones para resolver una pregunta. En el flujo propuesto, recibe la consulta, verifica su formato, solicita fragmentos, determina si existe contexto suficiente, construye el prompt, consulta al modelo y revisa la respuesta. Si no existe evidencia, debe dirigir el flujo hacia una respuesta de incertidumbre.
+
+La orquestación puede representarse como una secuencia o como un grafo de estados y transiciones. Bibliotecas como LangChain y LangGraph pueden apoyar esta organización, pero el fundamento es separar responsabilidades y hacer explícitas las decisiones del flujo. El servicio web permanece como frontera de la aplicación y la lógica del agente se mantiene en una capa independiente \cite{langchainDocs,langgraphDocs}.
+
+\subsection{Servicios web, contratos de datos y control de origen}
+
+Una API REST (Representational State Transfer) expone operaciones mediante rutas HTTP. FastAPI permite declarar modelos de entrada, validar solicitudes y producir documentación interactiva a partir del esquema OpenAPI \cite{fastapiDocs}. La ruta de conversación recibe un objeto JSON con la pregunta y devuelve texto, fuentes y estado.
+
+Si el frontend y el backend se ejecutan en puertos diferentes, el navegador puede bloquear la solicitud por la política de mismo origen. CORS permite declarar los orígenes, métodos y encabezados autorizados. En producción, la lista debe ser más restrictiva que durante el desarrollo. Las variables de entorno permiten mantener las claves del proveedor en el backend y fuera del repositorio.
+
+\subsection{Guardrails y evaluación}
+
+Los guardrails son reglas que limitan o revisan el comportamiento del agente. Deben cubrir preguntas fuera del dominio, ausencia de contexto, respuestas que no coincidan con las fuentes, errores del proveedor y solicitudes que requieran intervención humana. El agente debe preferir indicar que no se encontró información suficiente antes que completar una instrucción mediante una suposición.
+
+La evaluación debe medir relevancia de la recuperación, fidelidad al contexto, exactitud, claridad, cobertura, latencia y comportamiento ante errores. El marco de gestión de riesgos de inteligencia artificial del Instituto Nacional de Estándares y Tecnología propone considerar confiabilidad, transparencia, seguridad y responsabilidad \cite{nistAirmf}. Estos criterios orientan las pruebas posteriores del copiloto.
 
 
 \subsection{Temas tentativos del marco teórico} \label{sec:temas_tentativos} % audit:req=temas_marco_teorico
@@ -51,4 +105,14 @@ o dos oraciones: ¿qué es y por qué lo necesito?
 \textbf{Cómo se revisa:} que los temas cubran lo necesario para el proyecto y no incluyan relleno.
 \end{guia}
 
-% >>> REVISIÓN 1: ESCRIBE AQUÍ la lista de temas tentativos <<<
+\begin{enumerate}
+    \item \textbf{Inteligencia artificial generativa y modelos de lenguaje:} se estudiará cómo interpretan instrucciones y producen texto, así como sus límites cuando no reciben información específica del dominio.
+    \item \textbf{Recuperación aumentada por generación:} se analizará la relación entre recuperación y generación, sus etapas, ventajas y condiciones para declarar que el contexto es insuficiente.
+    \item \textbf{Procesamiento y fragmentación de documentos:} se revisarán extracción, limpieza, división en fragmentos, solapamiento y conservación de la estructura documental.
+    \item \textbf{Embeddings y similitud semántica:} se explicará la representación vectorial, las métricas de comparación, el ordenamiento de resultados y el uso de umbrales.
+    \item \textbf{Almacenamiento vectorial y metadatos:} se estudiará cómo relacionar vectores, contenido, página, sección, versión y archivo de origen para conservar la trazabilidad.
+    \item \textbf{Ingeniería de prompts y construcción de contexto:} se describirán las instrucciones del agente, el formato de salida, las fuentes y la respuesta ante información insuficiente.
+    \item \textbf{Agentes y orquestación de flujos:} se abordarán estados, decisiones, recuperación, generación, guardrails y escalamiento hacia una persona responsable.
+    \item \textbf{Servicios web y comunicación entre capas:} se explicarán las rutas, contratos JSON, validación, CORS y protección de credenciales en una arquitectura cliente-servidor.
+    \item \textbf{Evaluación y confiabilidad de sistemas RAG:} se revisarán relevancia, fidelidad, claridad, latencia, errores y criterios para determinar si una respuesta es aceptable.
+\end{enumerate}

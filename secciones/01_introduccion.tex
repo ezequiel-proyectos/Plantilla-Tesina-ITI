@@ -28,7 +28,17 @@ nada concreto; dejar la introducción para el final y no actualizarla cuando el 
 organización descrita coincida con las secciones reales del documento.
 \end{guia}
 
-% >>> ESCRIBE AQUÍ el texto de la introducción (fuera de la guía) <<<
+En las organizaciones que desarrollan soluciones tecnológicas para la industria, la documentación representa una parte importante del conocimiento operativo. Manuales, instructivos, procedimientos, políticas y especificaciones contienen información que debe consultarse para realizar actividades de manera uniforme. Sin embargo, la existencia de los documentos no garantiza que la información pueda localizarse con rapidez cuando los archivos están distribuidos, tienen formatos distintos o emplean una terminología que no coincide con la pregunta del usuario.
+
+En un entorno de innovación industrial, la información técnica puede cambiar durante el ciclo de vida de un proyecto. Por ello, una persona que necesita conocer un procedimiento requiere una respuesta comprensible y también la posibilidad de revisar el documento, página o sección de donde provino. La trazabilidad permite verificar la respuesta, corregir errores y evitar que una recomendación automática se interprete como una instrucción oficial sin respaldo.
+
+La inteligencia artificial (IA) generativa facilita la interacción con la información mediante preguntas en lenguaje cotidiano. No obstante, un modelo consultado sin documentación específica puede responder con conocimiento general o producir afirmaciones que no están sustentadas por los procedimientos internos. La recuperación aumentada por generación combina la búsqueda de información con la generación de texto para proporcionar contexto al modelo y reducir esa limitación \cite{lewis2020rag,gao2023rag}.
+
+Este proyecto propone la base de un copiloto agéntico basado en RAG para documentación técnica y procedimientos de planta. La solución integra una interfaz web, una API propia y un flujo de inteligencia artificial. El backend recibe la pregunta, valida los datos y prepara la comunicación con el modelo externo, mientras que la arquitectura queda preparada para recuperar fragmentos documentales y devolver sus fuentes.
+
+La interfaz se desarrolla con HTML, CSS y JavaScript; el backend se organiza con Python y FastAPI. La comunicación se realiza mediante HTTP y JSON, y FastAPI permite validar solicitudes y producir documentación interactiva de la API \cite{fastapiDocs}. Las claves de acceso se conservan en el servidor para no exponerlas en el navegador.
+
+El proyecto se realiza en el Centro de Innovación Industrial en Inteligencia Artificial (CII.IA), ubicado en Monterrey, Nuevo León, México. La orientación de la organización hacia la aplicación y el escalamiento de inteligencia artificial para la industria sustenta la pertinencia de una herramienta de consulta documental \cite{ciiia2026,ciiia2026b}. El documento presenta el problema, los objetivos, los antecedentes, la justificación, los alcances y las limitaciones de la propuesta.
 
 
 \subsection{Planteamiento del problema} \label{sec:problema} % audit:req=planteamiento
@@ -54,7 +64,13 @@ problemas sin evidencia; enunciados tan amplios que no se pueden resolver en una
 \textbf{Cómo se revisa:} que el problema esté delimitado, sea verificable y que los objetivos lo atiendan.
 \end{guia}
 
-% >>> ESCRIBE AQUÍ el planteamiento del problema <<<
+El problema se presenta cuando una persona necesita consultar una indicación técnica y no cuenta con un mecanismo uniforme para localizarla. La información puede estar dispersa en documentos distintos, contener versiones previas o emplear términos diferentes a los de la pregunta. La búsqueda manual consume tiempo y puede producir interpretaciones diferentes entre usuarios; una búsqueda literal tampoco siempre identifica fragmentos que expresan la misma idea con otras palabras.
+
+La incorporación directa de un modelo de lenguaje tampoco resuelve por sí sola la situación. Aunque el modelo puede redactar una respuesta clara, no existe garantía de que utilice la documentación interna, conozca la versión vigente o señale la página donde obtuvo la información. En un procedimiento de planta, esta falta de trazabilidad representa una limitación importante.
+
+Por lo tanto, el problema de desarrollo se formula de la siguiente manera: ¿cómo diseñar e implementar la base de un copiloto web que facilite la consulta de documentación técnica mediante inteligencia artificial, se comunique de manera segura con un backend, utilice un flujo preparado para recuperación semántica y devuelva respuestas con fuentes verificables?
+
+El problema comprende cuatro aspectos relacionados. Primero, la interacción requiere una interfaz sencilla para escribir preguntas y leer respuestas. Segundo, la integración necesita una API que valide y coordine la solicitud. Tercero, el conocimiento requiere un corpus con fragmentos, embeddings y metadatos. Finalmente, el control exige reglas para indicar falta de información, manejar errores y evitar que una respuesta generada se presente como un procedimiento oficial sin evidencia.
 
 
 \subsection{Objetivos} \label{sec:objetivos} % audit:req=objetivos
@@ -82,10 +98,21 @@ con tiempo definido.
 \end{guia}
 
 \subsubsection{Objetivo general} \label{subsec:objetivo_general}
-% >>> ESCRIBE AQUÍ el objetivo general (una sola oración) <<<
+Desarrollar la base funcional de un copiloto agéntico RAG para consultar documentación técnica y procedimientos de planta, integrando una interfaz web, una API con FastAPI y un modelo externo de inteligencia artificial, con una arquitectura preparada para recuperar fragmentos documentales, conservar sus metadatos y presentar fuentes verificables.
 
 \subsubsection{Objetivos específicos} \label{subsec:objetivos_especificos}
-% >>> ESCRIBE AQUÍ los objetivos específicos como lista numerada: \begin{enumerate} \item ... \end{enumerate} <<<
+\begin{enumerate}
+    \item Analizar la necesidad de consulta documental y delimitar el alcance funcional de la primera versión.
+    \item Identificar los actores, entradas, salidas y restricciones que intervienen en una consulta al copiloto.
+    \item Diseñar una interfaz web que permita escribir preguntas, enviar solicitudes y visualizar respuestas.
+    \item Implementar una API con FastAPI para recibir, validar y responder solicitudes de conversación.
+    \item Configurar CORS y el intercambio de datos en formato JSON entre el frontend y el backend.
+    \item Integrar un proveedor externo de inteligencia artificial mediante variables de entorno protegidas.
+    \item Definir el flujo de validación, recuperación, construcción de contexto y generación de respuestas.
+    \item Establecer un contrato para fragmentos documentales con identificador, contenido, archivo, página, sección y puntuación.
+    \item Aplicar reglas para que el agente indique cuando no cuenta con información suficiente y evite inventar procedimientos.
+    \item Preparar pruebas de comunicación entre frontend, backend, recuperador y modelo externo.
+\end{enumerate}
 
 
 \subsection{Justificación} \label{sec:justificacion} % audit:req=justificacion
@@ -110,7 +137,13 @@ eficiencia''); olvidar al beneficiario.
 \textbf{Cómo se revisa:} que los beneficios sean concretos y consistentes con el problema y los objetivos.
 \end{guia}
 
-% >>> ESCRIBE AQUÍ la justificación <<<
+Un copiloto para documentación técnica puede reducir el tiempo dedicado a localizar información y facilitar el acceso al conocimiento organizacional. En lugar de depender de que el usuario recuerde el nombre de un archivo o revise manualmente varias carpetas, la interfaz permite formular una pregunta de manera natural y recibir una respuesta vinculada con una fuente.
+
+La propuesta es especialmente útil cuando la documentación contiene procedimientos repetitivos, definiciones técnicas o instrucciones que deben consultarse con frecuencia. La recuperación semántica puede identificar fragmentos relacionados aunque la redacción de la pregunta no coincida literalmente con la del documento. La inclusión de metadatos permite revisar el resultado y confirmar la información antes de utilizarla en una actividad crítica.
+
+Desde el punto de vista de desarrollo, el proyecto integra conocimientos de frontend, backend, APIs, bases de datos, procesamiento de lenguaje natural y evaluación de inteligencia artificial. La separación de componentes facilita que el diseño visual cambie sin alterar el servicio, que el proveedor de IA pueda sustituirse y que la fuente documental se actualice sin reconstruir toda la aplicación.
+
+La propuesta también se justifica por su enfoque de control. No se plantea un chatbot abierto que responda cualquier tema, sino un copiloto limitado a un dominio documental. Cuando el contexto no sea suficiente, el sistema debe comunicar esa condición; una respuesta negativa y verificable es preferible a una respuesta extensa sin respaldo.
 
 
 \subsection{Alcances y limitaciones} \label{sec:alcances_limitaciones} % audit:req=alcances
@@ -134,7 +167,25 @@ queda fuera.
 \end{guia}
 
 \subsubsection{Alcances} \label{subsec:alcances}
-% >>> ESCRIBE AQUÍ los alcances <<<
+\begin{itemize}
+    \item Analizar la necesidad de consulta documental y definir el flujo general del copiloto.
+    \item Mantener una interfaz web para escribir preguntas, enviar solicitudes y consultar respuestas.
+    \item Implementar una API con FastAPI para validar solicitudes y devolver respuestas en JSON.
+    \item Configurar la comunicación entre frontend y backend mediante CORS.
+    \item Integrar un modelo externo de inteligencia artificial mediante variables de entorno.
+    \item Definir la arquitectura RAG, la recuperación de contexto, la construcción del prompt y la generación de respuestas.
+    \item Especificar los metadatos mínimos de cada fragmento: identificador, contenido, archivo de origen, página, sección y puntuación.
+    \item Preparar la integración con documentos técnicos, embeddings, almacenamiento vectorial y búsqueda semántica.
+    \item Documentar las decisiones de diseño y las pruebas de comunicación de la primera versión.
+\end{itemize}
 
 \subsubsection{Limitaciones} \label{subsec:limitaciones}
-% >>> ESCRIBE AQUÍ las limitaciones <<<
+\begin{itemize}
+    \item La respuesta depende de la disponibilidad, cuota, autenticación y modelo seleccionado en el proveedor externo de inteligencia artificial.
+    \item La calidad del resultado depende de que los documentos estén completos, vigentes, correctamente fragmentados y acompañados de metadatos.
+    \item La búsqueda semántica no garantiza por sí sola que un fragmento contenga toda la respuesta; se requiere validar la suficiencia del contexto.
+    \item La carga de embeddings y el endpoint de búsqueda deben validarse con los datos autorizados y entregados por el Integrante 1.
+    \item El sistema no sustituye la revisión de una persona responsable cuando la consulta se relaciona con seguridad, calidad, operación o una decisión crítica.
+    \item La primera versión se limita al dominio de documentación técnica y procedimientos de planta; no es un chatbot de propósito general.
+    \item El cambio de proveedor, la actualización del corpus y el despliegue en producción requieren configuraciones y pruebas adicionales.
+\end{itemize}
