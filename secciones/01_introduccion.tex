@@ -32,13 +32,13 @@ En las organizaciones que desarrollan soluciones tecnológicas para la industria
 
 En un entorno de innovación industrial, la información técnica puede cambiar durante el ciclo de vida de un proyecto. Por ello, una persona que necesita conocer un procedimiento requiere una respuesta comprensible y también la posibilidad de revisar el documento, página o sección de donde provino. La trazabilidad permite verificar la respuesta, corregir errores y evitar que una recomendación automática se interprete como una instrucción oficial sin respaldo.
 
-La inteligencia artificial (IA) generativa facilita la interacción con la información mediante preguntas en lenguaje cotidiano. No obstante, un modelo consultado sin documentación específica puede responder con conocimiento general o producir afirmaciones que no están sustentadas por los procedimientos internos. La recuperación aumentada por generación combina la búsqueda de información con la generación de texto para proporcionar contexto al modelo y reducir esa limitación \cite{lewis2020rag,gao2023rag}.
+La inteligencia artificial (IA) generativa facilita la interacción con la información mediante preguntas en lenguaje cotidiano. No obstante, un modelo consultado sin documentación específica puede responder con conocimiento general o producir afirmaciones que no están sustentadas por los procedimientos internos. La Recuperación Aumentada por Generación (RAG) combina la búsqueda de información con la generación de texto para proporcionar contexto al modelo y reducir esa limitación \cite{lewis2020rag,gao2023rag}.
 
-Este proyecto propone la base de un copiloto agéntico basado en RAG para documentación técnica y procedimientos de planta. La solución integra una interfaz web, una API propia y un flujo de inteligencia artificial. El backend recibe la pregunta, valida los datos y prepara la comunicación con el modelo externo, mientras que la arquitectura queda preparada para recuperar fragmentos documentales y devolver sus fuentes.
+Este proyecto propone la base de un copiloto agéntico basado en RAG para documentación técnica y procedimientos de planta. La solución integra una interfaz web, una interfaz de programación de aplicaciones (API) propia y un flujo de IA. El backend recibe la pregunta, valida los datos y prepara la comunicación con el modelo externo, mientras que la arquitectura queda preparada para recuperar fragmentos documentales y devolver sus fuentes.
 
 La interfaz se desarrolla con HTML, CSS y JavaScript; el backend se organiza con Python y FastAPI. La comunicación se realiza mediante HTTP y JSON, y FastAPI permite validar solicitudes y producir documentación interactiva de la API \cite{fastapiDocs}. Las claves de acceso se conservan en el servidor para no exponerlas en el navegador.
 
-El proyecto se realiza en el Centro de Innovación Industrial en Inteligencia Artificial (CII.IA), ubicado en Monterrey, Nuevo León, México. La orientación de la organización hacia la aplicación y el escalamiento de inteligencia artificial para la industria sustenta la pertinencia de una herramienta de consulta documental \cite{ciiia2026,ciiia2026b}. El documento presenta el problema, los objetivos, los antecedentes, la justificación, los alcances y las limitaciones de la propuesta.
+El proyecto se realiza en el Centro de Innovación Industrial en Inteligencia Artificial (CII.IA), ubicado en Monterrey, Nuevo León, México. La orientación de la organización hacia la aplicación y el escalamiento de IA para la industria sustenta la pertinencia de una herramienta de consulta documental \cite{ciiia2026,ciiia2026b}. El documento presenta el problema, los objetivos, los antecedentes, la justificación, los alcances y las limitaciones de la propuesta.
 
 
 \subsection{Planteamiento del problema} \label{sec:problema} % audit:req=planteamiento
@@ -68,7 +68,7 @@ El problema se presenta cuando una persona necesita consultar una indicación t�
 
 La incorporación directa de un modelo de lenguaje tampoco resuelve por sí sola la situación. Aunque el modelo puede redactar una respuesta clara, no existe garantía de que utilice la documentación interna, conozca la versión vigente o señale la página donde obtuvo la información. En un procedimiento de planta, esta falta de trazabilidad representa una limitación importante.
 
-Por lo tanto, el problema de desarrollo se formula de la siguiente manera: ¿cómo diseñar e implementar la base de un copiloto web que facilite la consulta de documentación técnica mediante inteligencia artificial, se comunique de manera segura con un backend, utilice un flujo preparado para recuperación semántica y devuelva respuestas con fuentes verificables?
+Por lo tanto, el problema de desarrollo se formula de la siguiente manera: \textquestiondown cómo diseñar e implementar la base de un copiloto web que facilite la consulta de documentación técnica mediante IA, se comunique de manera segura con un backend, utilice un flujo preparado para recuperación semántica y devuelva respuestas con fuentes verificables?
 
 El problema comprende cuatro aspectos relacionados. Primero, la interacción requiere una interfaz sencilla para escribir preguntas y leer respuestas. Segundo, la integración necesita una API que valide y coordine la solicitud. Tercero, el conocimiento requiere un corpus con fragmentos, embeddings y metadatos. Finalmente, el control exige reglas para indicar falta de información, manejar errores y evitar que una respuesta generada se presente como un procedimiento oficial sin evidencia.
 
@@ -98,7 +98,7 @@ con tiempo definido.
 \end{guia}
 
 \subsubsection{Objetivo general} \label{subsec:objetivo_general}
-Desarrollar la base funcional de un copiloto agéntico RAG para consultar documentación técnica y procedimientos de planta, integrando una interfaz web, una API con FastAPI y un modelo externo de inteligencia artificial, con una arquitectura preparada para recuperar fragmentos documentales, conservar sus metadatos y presentar fuentes verificables.
+Desarrollar la base funcional de un copiloto agéntico RAG para consultar documentación técnica y procedimientos de planta, integrando una interfaz web, una API con FastAPI y un modelo externo de IA, con una arquitectura preparada para recuperar fragmentos documentales, conservar sus metadatos y presentar fuentes verificables.
 
 \subsubsection{Objetivos específicos} \label{subsec:objetivos_especificos}
 \begin{enumerate}
@@ -106,8 +106,8 @@ Desarrollar la base funcional de un copiloto agéntico RAG para consultar docume
     \item Identificar los actores, entradas, salidas y restricciones que intervienen en una consulta al copiloto.
     \item Diseñar una interfaz web que permita escribir preguntas, enviar solicitudes y visualizar respuestas.
     \item Implementar una API con FastAPI para recibir, validar y responder solicitudes de conversación.
-    \item Configurar CORS y el intercambio de datos en formato JSON entre el frontend y el backend.
-    \item Integrar un proveedor externo de inteligencia artificial mediante variables de entorno protegidas.
+    \item Configurar el intercambio de recursos de origen cruzado (CORS) y el intercambio de datos en formato JSON entre el frontend y el backend.
+    \item Integrar un proveedor externo de IA mediante variables de entorno protegidas.
     \item Definir el flujo de validación, recuperación, construcción de contexto y generación de respuestas.
     \item Establecer un contrato para fragmentos documentales con identificador, contenido, archivo, página, sección y puntuación.
     \item Aplicar reglas para que el agente indique cuando no cuenta con información suficiente y evite inventar procedimientos.
@@ -141,7 +141,7 @@ Un copiloto para documentación técnica puede reducir el tiempo dedicado a loca
 
 La propuesta es especialmente útil cuando la documentación contiene procedimientos repetitivos, definiciones técnicas o instrucciones que deben consultarse con frecuencia. La recuperación semántica puede identificar fragmentos relacionados aunque la redacción de la pregunta no coincida literalmente con la del documento. La inclusión de metadatos permite revisar el resultado y confirmar la información antes de utilizarla en una actividad crítica.
 
-Desde el punto de vista de desarrollo, el proyecto integra conocimientos de frontend, backend, APIs, bases de datos, procesamiento de lenguaje natural y evaluación de inteligencia artificial. La separación de componentes facilita que el diseño visual cambie sin alterar el servicio, que el proveedor de IA pueda sustituirse y que la fuente documental se actualice sin reconstruir toda la aplicación.
+Desde el punto de vista de desarrollo, el proyecto integra conocimientos de frontend, backend, API, bases de datos, procesamiento de lenguaje natural y evaluación de IA. La separación de componentes facilita que el diseño visual cambie sin alterar el servicio, que el proveedor de IA pueda sustituirse y que la fuente documental se actualice sin reconstruir toda la aplicación.
 
 La propuesta también se justifica por su enfoque de control. No se plantea un chatbot abierto que responda cualquier tema, sino un copiloto limitado a un dominio documental. Cuando el contexto no sea suficiente, el sistema debe comunicar esa condición; una respuesta negativa y verificable es preferible a una respuesta extensa sin respaldo.
 
@@ -172,7 +172,7 @@ queda fuera.
     \item Mantener una interfaz web para escribir preguntas, enviar solicitudes y consultar respuestas.
     \item Implementar una API con FastAPI para validar solicitudes y devolver respuestas en JSON.
     \item Configurar la comunicación entre frontend y backend mediante CORS.
-    \item Integrar un modelo externo de inteligencia artificial mediante variables de entorno.
+    \item Integrar un modelo externo de IA mediante variables de entorno.
     \item Definir la arquitectura RAG, la recuperación de contexto, la construcción del prompt y la generación de respuestas.
     \item Especificar los metadatos mínimos de cada fragmento: identificador, contenido, archivo de origen, página, sección y puntuación.
     \item Preparar la integración con documentos técnicos, embeddings, almacenamiento vectorial y búsqueda semántica.
@@ -181,7 +181,7 @@ queda fuera.
 
 \subsubsection{Limitaciones} \label{subsec:limitaciones}
 \begin{itemize}
-    \item La respuesta depende de la disponibilidad, cuota, autenticación y modelo seleccionado en el proveedor externo de inteligencia artificial.
+    \item La respuesta depende de la disponibilidad, cuota, autenticación y modelo seleccionado en el proveedor externo de IA.
     \item La calidad del resultado depende de que los documentos estén completos, vigentes, correctamente fragmentados y acompañados de metadatos.
     \item La búsqueda semántica no garantiza por sí sola que un fragmento contenga toda la respuesta; se requiere validar la suficiencia del contexto.
     \item La carga de embeddings y el endpoint de búsqueda deben validarse con los datos autorizados y entregados por el Integrante 1.

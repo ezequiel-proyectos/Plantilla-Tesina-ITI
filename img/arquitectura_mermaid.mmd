@@ -1,0 +1,26 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#ffffff",
+    "primaryTextColor": "#14213d",
+    "primaryBorderColor": "#202033",
+    "lineColor": "#111111",
+    "fontFamily": "Arial",
+    "fontSize": "16px"
+  },
+  "flowchart": {
+    "curve": "stepBefore",
+    "nodeSpacing": 30,
+    "rankSpacing": 45
+  }
+}}%%
+flowchart LR
+    U[Usuario] --> F[Frontend web]
+    F --> API[API FastAPI]
+    API --> A[Agente RAG]
+    API --> R[Recuperación de<br/>fragmentos]
+    A --> M["Modelo externo<br/>(Gemini o GPT)"]
+    U --> P[Pregunta y<br/>respuesta]
+    P --> S[Respuesta con<br/>fuentes y estado]
+    R --> S
+    M --> S

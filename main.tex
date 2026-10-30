@@ -1,46 +1,76 @@
 % =====================================================================================
 % PLANTILLA DE TESINA / TESIS  -  Universidad Politécnica de Victoria (UPV)
+% Autores: Said Polanco-Martagón, Marco A. Nuño-Maganda   |   Versión reorganizada: ver GUIA_ALUMNO.md
+%
+% CÓMO USARLA (resumen; los detalles están en GUIA_ALUMNO.md):
+%   1. Edita configuracion/datos.tex con tus datos y el tipo de proyecto.
+%   2. Escribe cada sección en su archivo de la carpeta secciones/ (lee la «Guía» que trae cada una).
+%   3. Agrega tus referencias en referencias/referencias.bib y cítalas con \cite{clave}.
+%   4. NO cambies los títulos de las secciones ni borres los comentarios «% audit:req=...»:
+%      el sistema de revisión los usa para ubicar cada sección.
+% Compilar:  latexmk -pdf main.tex     (usa biber para la bibliografía)
 % =====================================================================================
 
 \documentclass[12pt]{article}
 
-\input{configuracion/datos}
-\input{configuracion/preambulo}
+\input{configuracion/datos}       % <-- tus datos (único archivo de configuración que editas)
+\input{configuracion/preambulo}   % paquetes, estilos y guías (no editar)
 
 \begin{document}
 
-% Partes institucionales
+%-----------------------------------------------------------------------------------------------------------------
+% PARTES INSTITUCIONALES (portada, cartas y evaluación). Se generan con tus datos; no las edites.
+%-----------------------------------------------------------------------------------------------------------------
 \input{institucional/portada}
-\input{institucional/cartas}
+\input{institucional/cartas}            % antes de imprimir: sustituye los PDF de cartas/ por tus cartas escaneadas
 \input{institucional/evaluacion_rubrica}
 \input{institucional/evaluacion_registro}
 
-% Preliminares
-\input{secciones/00_preliminares}
+%-----------------------------------------------------------------------------------------------------------------
+% AGRADECIMIENTOS, RESUMEN, SUMMARY E ÍNDICE
+%-----------------------------------------------------------------------------------------------------------------
+\input{secciones/00_preliminares}       % Agradecimientos, Resumen, Summary         [Revisión 4]
 
 \clearpage
 \addcontentsline{toc}{section}{Índice}
 \renewcommand\contentsname{Índice}
 \tableofcontents
 
-% Cuerpo del documento
+%-----------------------------------------------------------------------------------------------------------------
+% CUERPO DEL DOCUMENTO. Cada revisión agrega secciones; puedes ir llenándolas en orden.
+%-----------------------------------------------------------------------------------------------------------------
 \clearpage
 \pagenumbering{arabic}
 \setcounter{page}{1}
 
-\input{secciones/01_introduccion}
+% ---- Revisión 1 ---------------------------------------------------------------------------------
+\input{secciones/01_introduccion}       % Introducción, Planteamiento, Objetivos, Justificación, Alcances y limitaciones
 \clearpage
-\input{secciones/02_antecedentes}
+\input{secciones/02_antecedentes}       % Antecedentes, de la empresa, teóricos, tabla comparativa
 \clearpage
+
+% ---- Revisión 1 (temas tentativos) y Revisión 2 (completo) -------------------------------------------------
 \input{secciones/03_marco_teorico}
 \clearpage
+
+% ---- Revisión 2 ---------------------------------------------------------------------------------
+% SOLO proyectos de INVESTIGACIÓN: quita el % de la siguiente línea (y pon \TipoProyecto{investigacion}).
+%\input{secciones/04_estado_del_arte}
+%\clearpage
 \input{secciones/05_propuesta_solucion}
 \clearpage
-\input{secciones/06_desarrollo_sistema}
-\clearpage
-\input{secciones/07_conclusiones}
 
-% Índices y referencias
+% ---- Revisión 3: ELIGE UNA OPCIÓN (deja una línea con \input y comenta o borra la otra) -----------------------------
+\input{secciones/06_desarrollo_sistema}         % Proyecto de SISTEMA INFORMÁTICO (\TipoProyecto{sistema})
+%\input{secciones/06_diseno_experimentos}       % Proyecto de INVESTIGACIÓN (\TipoProyecto{investigacion})
+\clearpage
+
+% ---- Revisión 4 ---------------------------------------------------------------------------------
+\input{secciones/07_conclusiones}       % Conclusiones, Trabajo futuro
+
+%-----------------------------------------------------------------------------------------------------------------
+% ÍNDICES Y REFERENCIAS
+%-----------------------------------------------------------------------------------------------------------------
 \clearpage
 \addcontentsline{toc}{section}{Índice de figuras}
 \renewcommand\listfigurename{Índice de figuras}

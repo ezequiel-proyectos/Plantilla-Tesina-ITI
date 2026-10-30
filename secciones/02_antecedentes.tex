@@ -37,7 +37,7 @@ La consulta de documentación técnica ha evolucionado desde la revisión manual
 
 Los sistemas conversacionales han permitido consultar información mediante preguntas en lenguaje natural. Sin embargo, un chatbot sin conexión con el corpus de la organización puede responder con conocimiento general, mezclar conceptos o no distinguir entre una recomendación y un procedimiento autorizado. Los modelos de lenguaje mejoran la redacción, pero no garantizan por sí solos la trazabilidad de las fuentes.
 
-La recuperación aumentada por generación propone buscar fragmentos antes de solicitar la respuesta al modelo. El trabajo de Lewis et al. presenta esta combinación para tareas intensivas en conocimiento, mientras que Gao et al. revisan sus componentes, ventajas y retos \cite{lewis2020rag,gao2023rag}. Estas propuestas muestran que la calidad depende tanto de la recuperación como de la generación.
+El enfoque RAG propone buscar fragmentos antes de solicitar la respuesta al modelo. El trabajo de Lewis et al. presenta esta combinación para tareas intensivas en conocimiento, mientras que Gao et al. revisan sus componentes, ventajas y retos \cite{lewis2020rag,gao2023rag}. Estas propuestas muestran que la calidad depende tanto de la recuperación como de la generación.
 
 En el contexto empresarial, las plataformas de documentación técnica y los servicios de modelos externos permiten centralizar la consulta, pero requieren controles sobre credenciales, versiones y fuentes. La documentación oficial de FastAPI describe la validación y exposición de servicios web, mientras que la documentación de Gemini describe el consumo de un modelo generativo mediante una API \cite{fastapiDocs,googleGeminiApi}. La propuesta de este proyecto toma esos principios y los delimita a los documentos autorizados de CII.IA.
 
@@ -67,9 +67,9 @@ datos personales.
 \textbf{Cómo se revisa:} que se entienda el contexto operativo real del proyecto.
 \end{guia}
 
-El Centro de Innovación Industrial en Inteligencia Artificial (CII.IA) es una organización ubicada en Monterrey, Nuevo León, México, orientada a la aplicación y escalamiento de soluciones de inteligencia artificial para la industria. Su actividad relaciona la identificación de necesidades con el diseño, prototipado, validación y posible escalamiento de soluciones tecnológicas \cite{ciiia2026,ciiia2026b}.
+El Centro de Innovación Industrial en Inteligencia Artificial (CII.IA) es una organización ubicada en Monterrey, Nuevo León, México, orientada a la aplicación y escalamiento de soluciones de IA para la industria. Su actividad relaciona la identificación de necesidades con el diseño, prototipado, validación y posible escalamiento de soluciones tecnológicas \cite{ciiia2026,ciiia2026b}.
 
-El proyecto se vincula con el área de desarrollo de soluciones de inteligencia artificial y software, donde la documentación técnica sirve para comunicar decisiones, procedimientos, configuraciones y resultados. El asesor empresarial es la Dra. Ludivina Facundo Flores, quien acompaña el desarrollo desde el organismo receptor.
+El proyecto se vincula con el área de desarrollo de soluciones de IA y software, donde la documentación técnica sirve para comunicar decisiones, procedimientos, configuraciones y resultados. El asesor empresarial es la Dra. Ludivina Facundo Flores, quien acompaña el desarrollo desde el organismo receptor.
 
 Actualmente, la consulta de información técnica puede requerir localizar archivos, revisar diferentes versiones y comparar manualmente fragmentos. El copiloto propuesto busca apoyar ese proceso mediante una pregunta en lenguaje natural, una API que coordine la solicitud y una respuesta relacionada con las fuentes documentales. La herramienta no sustituye a la persona responsable ni convierte una respuesta generada en una instrucción oficial.
 
@@ -92,9 +92,9 @@ tu proyecto? ¿qué fuentes los respaldan?
 \textbf{Cómo se revisa:} pertinencia y suficiencia de los conceptos, y calidad de las citas.
 \end{guia}
 
-Los antecedentes teóricos del proyecto relacionan inteligencia artificial generativa, recuperación de información e ingeniería de software. La inteligencia artificial generativa permite interpretar instrucciones y producir texto, pero su respuesta depende del contexto que reciba. Por ello, el modelo debe utilizarse como generador y no como única autoridad documental.
+Los antecedentes teóricos del proyecto relacionan IA generativa, recuperación de información e ingeniería de software. La IA generativa permite interpretar instrucciones y producir texto, pero su respuesta depende del contexto que reciba. Por ello, el modelo debe utilizarse como generador y no como única autoridad documental.
 
-La recuperación aumentada por generación (RAG) combina una etapa de búsqueda con una etapa de generación. Primero se procesan los documentos, se dividen en fragmentos y se transforma cada fragmento en un embedding. Después, la pregunta se transforma de manera compatible, se comparan vectores y se seleccionan los fragmentos más relevantes para construir el contexto de la solicitud \cite{lewis2020rag,gao2023rag}.
+El enfoque RAG combina una etapa de búsqueda con una etapa de generación. Primero se procesan los documentos, se dividen en fragmentos y se transforma cada fragmento en un embedding. Después, la pregunta se transforma de manera compatible, se comparan vectores y se seleccionan los fragmentos más relevantes para construir el contexto de la solicitud \cite{lewis2020rag,gao2023rag}.
 
 Los metadatos permiten conservar el identificador del fragmento, el archivo de origen, la página, la sección y la puntuación de similitud. Estos datos son necesarios para revisar la respuesta y distinguir entre una evidencia documental y una explicación general. El almacenamiento vectorial puede organizar el contenido, los metadatos y los embeddings para permitir búsquedas y filtros posteriores.
 
