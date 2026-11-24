@@ -34,6 +34,8 @@ propuesta.
 
 El marco teórico reúne los conceptos necesarios para comprender cómo una interfaz conversacional puede consultar documentación técnica controlada. La solución no se limita a consumir un modelo de lenguaje: requiere preparar el conocimiento, recibir la pregunta, recuperar información relevante, construir un contexto, generar una respuesta y validar el resultado.
 
+Para seleccionar las fuentes se priorizaron trabajos académicos publicados en conferencias o revistas especializadas, junto con documentación oficial de las tecnologías que forman parte de la solución. El criterio fue incluir fuentes que describieran una técnica empleada por el sistema, una limitación relevante para su diseño o un método para evaluar la recuperación y la generación. De esta forma, la bibliografía no se limita a definir conceptos: sustenta la elección de RAG, la búsqueda densa, los embeddings, el manejo del contexto y la evaluación \cite{lewis2020rag,gao2023rag,karpukhin2020dpr,reimers2019sbert,malkov2018hnsw,johnson2017faiss,liu2024lostmiddle,asai2024selfrag,es2024ragas}.
+
 \subsection{Temas tentativos del marco teórico} % audit:req=temas_marco_teorico
 
 Los temas inicialmente considerados para el marco teórico son: inteligencia artificial generativa y modelos de lenguaje; Recuperación Aumentada por Generación; procesamiento y fragmentación documental; embeddings y búsqueda semántica; almacenamiento vectorial y metadatos; ingeniería de prompts; agentes y orquestación; servicios web, contratos de datos y CORS; guardrails y evaluación. En la presente revisión, cada tema se desarrolla en las subsecciones siguientes.
@@ -48,7 +50,13 @@ El modelo no consulta automáticamente los procedimientos internos de una organi
 
 El enfoque RAG combina una etapa de recuperación de información con una etapa de generación de texto. La pregunta se utiliza para localizar fragmentos relacionados y esos fragmentos se incorporan a la solicitud que recibe el modelo. La respuesta se construye con base en el contexto recuperado, en lugar de depender únicamente del conocimiento general del modelo \cite{lewis2020rag,gao2023rag}.
 
-El flujo RAG puede dividirse en preparación y consulta. En la preparación se recopilan documentos, se extrae su texto, se divide en fragmentos y se calcula un embedding para cada uno. En la consulta se calcula el embedding de la pregunta, se comparan vectores, se seleccionan resultados y se prepara el contexto. La calidad depende del tamaño de los fragmentos, el solapamiento, el valor de \texttt{top\_k}, el prompt y la evaluación.
+El flujo RAG puede dividirse en preparación y consulta. En la preparación se recopilan documentos, se extrae su texto, se divide en fragmentos y se calcula un embedding para cada uno. En la consulta se calcula el embedding de la pregunta, se comparan vectores, se seleccionan resultados y se prepara el contexto. La calidad depende del tamaño de los fragmentos, el solapamiento, el valor de \texttt{top\_k}, el prompt y la evaluación. La literatura también advierte que recuperar más fragmentos no garantiza una mejor respuesta: el modelo puede aprovechar de forma desigual la información cuando el contexto crece \cite{liu2024lostmiddle}.
+
+\subsection{Antecedentes y diferencia de la propuesta}
+
+Los trabajos sobre RAG han demostrado que la recuperación densa puede mejorar la localización de pasajes relevantes frente a una búsqueda basada únicamente en coincidencias léxicas \cite{karpukhin2020dpr}. También existen propuestas que permiten recuperar bajo demanda y revisar la propia generación, como SELF-RAG \cite{asai2024selfrag}, y marcos de evaluación que separan la relevancia del contexto, la fidelidad y la calidad de la respuesta, como RAGAs \cite{es2024ragas}. Estas alternativas son antecedentes importantes, pero no se incorporan completas en esta etapa porque aumentarían la complejidad y el costo del prototipo.
+
+La diferencia de la propuesta es integrar un flujo acotado para documentación técnica de planta: recuperación local con metadatos, decisión explícita de suficiencia, generación con un proveedor externo y enlaces verificables al documento de origen. El objetivo no es entrenar un modelo nuevo ni competir con los métodos generales de recuperación, sino ofrecer una base reproducible que pueda ser validada con un corpus controlado y que pueda evolucionar hacia un índice vectorial persistente.
 
 \subsection{Procesamiento y fragmentación de documentos}
 
@@ -58,19 +66,19 @@ El tamaño debe equilibrar detalle y contexto. Un fragmento demasiado grande pue
 
 \subsection{Embeddings y búsqueda semántica}
 
-Un embedding representa un texto como un vector numérico dentro de un espacio donde los textos con significado parecido tienden a estar próximos. La pregunta y los fragmentos deben transformarse mediante un proceso compatible para que la comparación sea significativa. La similitud puede calcularse mediante distancia coseno, producto punto u otra métrica soportada por el motor vectorial.
+Un embedding representa un texto como un vector numérico dentro de un espacio donde los textos con significado parecido tienden a estar próximos. La pregunta y los fragmentos deben transformarse mediante un proceso compatible para que la comparación sea significativa. La similitud puede calcularse mediante distancia coseno, producto punto u otra métrica soportada por el motor vectorial. Los modelos de representación de oraciones, como Sentence-BERT, fueron diseñados para comparar textos mediante vectores y facilitar búsquedas semánticas \cite{reimers2019sbert}.
 
-La función de búsqueda recibe una pregunta y el valor de \texttt{top\_k}, y devuelve fragmentos ordenados por puntuación. Cada resultado debe conservar al menos \texttt{chunk\_id}, contenido, archivo de origen, página, sección y \texttt{score}. La similitud no es una prueba absoluta de verdad; el agente debe revisar la suficiencia del contexto y permitir que el usuario consulte la fuente original.
+La función de búsqueda recibe una pregunta y el valor de \texttt{top\_k}, que en la configuración de esta propuesta se fija en cuatro resultados como máximo, y devuelve fragmentos ordenados por puntuación. Además, se utiliza un umbral mínimo de similitud de 0.22 para evitar que cualquier coincidencia débil active la generación. Cada resultado debe conservar al menos \texttt{chunk\_id}, contenido, archivo de origen, página, sección y \texttt{score}. La similitud no es una prueba absoluta de verdad; el agente debe revisar la suficiencia del contexto y permitir que el usuario consulte la fuente original.
 
 \subsection{Almacenamiento vectorial, metadatos y trazabilidad}
 
-Una base vectorial almacena embeddings junto con los datos que describen cada registro. PostgreSQL con capacidades vectoriales puede conservar en un mismo sistema el contenido, los metadatos y el vector. Esto permite consultar fragmentos por similitud y filtrar por documento, sección, versión o área responsable.
+Una base vectorial almacena embeddings junto con los datos que describen cada registro. PostgreSQL con capacidades vectoriales puede conservar en un mismo sistema el contenido, los metadatos y el vector. Esto permite consultar fragmentos por similitud y filtrar por documento, sección, versión o área responsable. Las estructuras de vecinos aproximados, como HNSW, son una alternativa para acelerar la búsqueda en espacios vectoriales grandes \cite{malkov2018hnsw}; implementaciones especializadas como FAISS muestran el beneficio de optimizar la selección de vecinos para colecciones de alta dimensión \cite{johnson2017faiss}.
 
 Los metadatos permiten rastrear cada respuesta. Un registro puede incluir un identificador único, texto, vector, archivo de origen, página, sección, fecha de carga y versión. Si un documento deja de estar vigente, debe poder marcarse o retirarse sin perder el historial necesario para comprender una prueba anterior.
 
 \subsection{Ingeniería de prompts y construcción de contexto}
 
-El prompt establece las instrucciones con las que el modelo interpreta la pregunta y el contexto recuperado. En este proyecto debe indicar que la respuesta se base en los fragmentos recibidos, que diferencie evidencia de explicación y que declare la falta de información cuando los resultados no sean suficientes.
+El prompt establece las instrucciones con las que el modelo interpreta la pregunta y el contexto recuperado. En este proyecto debe indicar que la respuesta se base en los fragmentos recibidos, que diferencie evidencia de explicación y que declare la falta de información cuando los resultados no sean suficientes. La cantidad y el orden del contexto deben controlarse porque los modelos pueden utilizar peor la evidencia cuando queda rodeada de muchos fragmentos irrelevantes \cite{liu2024lostmiddle}.
 
 La construcción del contexto debe evitar incluir fragmentos irrelevantes o exceder la capacidad del modelo. También debe conservar una relación clara entre cada afirmación y sus fuentes. Por ello, el backend debe estructurar la pregunta, los fragmentos, las reglas de respuesta y el formato de salida antes de llamar al proveedor externo.
 
@@ -90,4 +98,4 @@ Si el frontend y el backend se ejecutan en puertos diferentes, el navegador pued
 
 Los guardrails son reglas que limitan o revisan el comportamiento del agente. Deben cubrir preguntas fuera del dominio, ausencia de contexto, respuestas que no coincidan con las fuentes, errores del proveedor y solicitudes que requieran intervención humana. El agente debe preferir indicar que no se encontró información suficiente antes que completar una instrucción mediante una suposición.
 
-La evaluación debe medir relevancia de la recuperación, fidelidad al contexto, exactitud, claridad, cobertura, latencia y comportamiento ante errores. El marco de gestión de riesgos de IA del Instituto Nacional de Estándares y Tecnología propone considerar confiabilidad, transparencia, seguridad y responsabilidad \cite{nistAirmf}. Estos criterios orientan las pruebas posteriores del copiloto.
+La evaluación debe medir relevancia de la recuperación, fidelidad al contexto, exactitud, claridad, cobertura, latencia y comportamiento ante errores. RAGAs propone separar dimensiones como la relevancia del contexto, la fidelidad de la respuesta y la pertinencia de la respuesta para evaluar una tubería RAG \cite{es2024ragas}. El marco de gestión de riesgos de IA del Instituto Nacional de Estándares y Tecnología propone considerar confiabilidad, transparencia, seguridad y responsabilidad \cite{nistAirmf}. Estos criterios orientan las pruebas posteriores del copiloto.

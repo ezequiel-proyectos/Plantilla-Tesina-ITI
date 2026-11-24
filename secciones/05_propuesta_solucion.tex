@@ -41,7 +41,7 @@ rápido''); propuesta desconectada de los objetivos; cronograma sin fechas.
 
 La propuesta consiste en desarrollar un copiloto web para consultar documentación técnica y procedimientos de planta mediante preguntas escritas en lenguaje natural. El sistema tendrá una arquitectura cliente-servidor: el usuario interactuará con una interfaz web construida con HTML, CSS y JavaScript; el backend recibirá la pregunta mediante una API desarrollada con FastAPI; y el agente coordinará la recuperación de fragmentos documentales, la construcción del contexto y la comunicación con un modelo externo de IA. La respuesta incluirá el texto generado, el estado de la operación y las fuentes disponibles para que el usuario pueda revisar el documento relacionado.
 
-El flujo general de la solución se representa en la Figura~\ref{fig:arquitectura_propuesta}. El modelo externo puede ser Gemini o un modelo basado en \textit{Generative Pre-trained Transformer} (GPT). La información documental será proporcionada por el corpus preparado por el Integrante 1. En esta etapa, el componente de consulta conservará los metadatos de cada fragmento y podrá trabajar con el índice local de pruebas; la conexión con un almacenamiento vectorial persistente se dejará preparada para la siguiente etapa de integración.
+El flujo general de la solución se representa en la Figura~\ref{fig:arquitectura_propuesta}. Para esta entrega se fija Gemini 3.5 Flash Lite mediante la API de Gemini; GPT queda como una alternativa futura detrás del mismo contrato de servicio. La información documental será proporcionada por el corpus preparado por el Integrante 1. En esta etapa, el componente de consulta conservará los metadatos de cada fragmento y podrá trabajar con el índice local de pruebas; la conexión con un almacenamiento vectorial persistente se dejará preparada para la siguiente etapa de integración.
 
 \begin{figure}[htbp]
 \centering
@@ -72,9 +72,30 @@ El usuario principal es el personal que necesita consultar procedimientos, manua
 
 \subsection{Tecnologías y metodología}
 
-La interfaz se implementará con HTML, CSS y JavaScript para conservar una estructura sencilla y facilitar su mantenimiento. FastAPI se utilizará como frontera de comunicación HTTP, con modelos de validación para las solicitudes y respuestas, de acuerdo con las capacidades documentadas del framework \cite{fastapiDocs}. El flujo del agente se organizará mediante un grafo de estados con LangGraph y plantillas de prompt de LangChain, de modo que la recuperación, la decisión sobre la suficiencia del contexto y la generación queden separadas \cite{langchainDocs,langgraphDocs}. Gemini o GPT se considerará el proveedor externo de generación, seleccionado mediante una variable de entorno y no mediante una clave escrita en el frontend \cite{googleGeminiApi}.
+La interfaz se implementará con HTML, CSS y JavaScript para conservar una estructura sencilla y facilitar su mantenimiento. FastAPI 0.141.1 se utilizará como frontera de comunicación HTTP, con Uvicorn 0.52.4, modelos de validación y documentación OpenAPI \cite{fastapiDocs}. El flujo del agente se organizará mediante un grafo de estados con LangGraph 1.2.11 y plantillas de prompt de LangChain 1.4.0, de modo que la recuperación, la decisión sobre la suficiencia del contexto y la generación queden separadas \cite{langchainDocs,langgraphDocs}. El proveedor de generación queda fijado en Gemini 3.5 Flash Lite, consultado mediante la API de Gemini y seleccionado por la variable de entorno \texttt{GEMINI\_MODEL}; la clave permanece únicamente en el backend \cite{googleGeminiApi}. El frontend se ejecutará con Vite 8.2.2 durante el desarrollo.
 
-La recuperación se realizará sobre los fragmentos y metadatos entregados por el Integrante 1. El índice local permite hacer pruebas reproducibles mientras se termina de definir el almacenamiento vectorial persistente; posteriormente podrá conectarse con PostgreSQL y pgvector sin cambiar el contrato de la API. El trabajo seguirá una metodología incremental: primero se valida la interfaz y la comunicación básica, después la recuperación y las fuentes, y finalmente la integración con el proveedor y las pruebas con preguntas representativas.
+La configuración reproducible de esta versión utiliza \texttt{temperature=0.1} en la generación, \texttt{top\_k=4} para recuperar como máximo cuatro fragmentos, umbral mínimo de similitud de 0.22 y tiempo de espera de 60 segundos para la llamada al proveedor. La recuperación se realizará sobre los fragmentos y metadatos entregados por el Integrante 1. El índice local permite hacer pruebas reproducibles mientras se termina de definir el almacenamiento vectorial persistente; posteriormente podrá conectarse con PostgreSQL y pgvector sin cambiar el contrato de la API. El trabajo seguirá una metodología incremental: primero se valida la interfaz y la comunicación básica, después la recuperación y las fuentes, y finalmente la integración con el proveedor y las pruebas con preguntas representativas.
+
+\subsection{Criterios de selección tecnológica}
+
+Las tecnologías se seleccionaron comparando costo de operación, madurez, integración, licencia y soporte. La Tabla~\ref{tab:seleccion_tecnologica} resume la decisión y evita presentar las herramientas como elecciones arbitrarias.
+
+\begin{table}[htbp]
+\centering
+\caption{Criterios comparables para seleccionar los componentes de la solución.}
+\label{tab:seleccion_tecnologica}
+\begin{tabular}{p{0.20\textwidth}p{0.22\textwidth}p{0.22\textwidth}p{0.25\textwidth}}
+\toprule
+\textbf{Componente} & \textbf{Alternativa considerada} & \textbf{Criterios} & \textbf{Decisión}\\
+\midrule
+Interfaz & React & Menor complejidad inicial, costo de mantenimiento e integración con el diseño existente. & HTML, CSS y JavaScript, porque permiten una interfaz directa sin una capa de compilación adicional.\\
+API & Flask o Express & Validación, documentación, integración con Python y soporte para operaciones asíncronas. & FastAPI, por sus modelos tipados, OpenAPI y compatibilidad con el backend del agente.\\
+Orquestación & Flujo manual propio & Madurez, trazabilidad de estados y facilidad para añadir decisiones. & LangChain y LangGraph, porque separan prompts, recuperación y transiciones del agente.\\
+Modelo & GPT & Disponibilidad, costo de pruebas y posibilidad de sustituir el proveedor. & Gemini 3.5 Flash Lite, porque es el proveedor configurado para esta entrega y se mantiene detrás de una variable de entorno.\\
+Índice vectorial & Servicio vectorial administrado & Costo, licencia, control de metadatos y complejidad operativa. & PostgreSQL con capacidades vectoriales, porque concentra datos y metadatos en un componente con soporte amplio.\\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Relación entre objetivos y componentes}
 
@@ -102,3 +123,25 @@ Mantener una base extensible para documentos nuevos. & Biblioteca de documentos,
 El plan de trabajo se divide en etapas incrementales. En la primera se revisan los requisitos y se valida la estructura del corpus. En la segunda se integran la interfaz, la API y el flujo de consulta. En la tercera se prueban la recuperación, los metadatos y los enlaces a las fuentes. En la cuarta se realizan pruebas con preguntas que sí tienen respuesta en los documentos y preguntas externas al corpus. Finalmente, se documentan los resultados, las limitaciones y las tareas de continuación.
 
 La solución se considerará funcional cuando una pregunta válida pueda enviarse desde el frontend y llegar al backend sin cambiar de ruta ni exponer credenciales; cuando el backend pueda devolver una respuesta JSON con estado; cuando una pregunta respaldada produzca fragmentos y fuentes consultables; y cuando una pregunta sin evidencia produzca una respuesta de incertidumbre sin inventar información. También se verificará que los errores del proveedor, los formatos no permitidos y los documentos inexistentes se comuniquen de forma comprensible al usuario.
+
+Para hacer medibles estos criterios se utilizará el conjunto fijo de preguntas versionado en \texttt{data/preguntas\_iniciales.csv}. La lista contiene preguntas de procedimientos, seguridad, mantenimiento, piezas, especificaciones y vigencia, además de preguntas que deben rechazarse por no estar sustentadas en el corpus. Antes de ejecutar la evaluación se registrará para cada fila la respuesta esperada, el documento de referencia y si existe evidencia suficiente. Durante la ronda no se agregarán preguntas ni se cambiarán los umbrales.
+
+\begin{table}[htbp]
+\centering
+\caption{Métricas, procedimiento y umbrales de aceptación.}
+\label{tab:metricas_aceptacion}
+\begin{tabular}{p{0.20\textwidth}p{0.38\textwidth}p{0.18\textwidth}p{0.14\textwidth}}
+\toprule
+\textbf{Métrica} & \textbf{Definición operacional} & \textbf{Umbral} & \textbf{Objetivo}\\
+\midrule
+Exactitud de respuesta & Porcentaje de preguntas con evidencia cuya respuesta coincide con la clave validada por el responsable del corpus. & $\geq 90\%$ & OE1, OE3\\
+Cita correcta & Porcentaje de respuestas sustentadas cuya fuente, sección o página coincide con el fragmento utilizado. & $\geq 90\%$ & OE3\\
+Falsas respuestas & Porcentaje de preguntas sin evidencia que reciben una respuesta afirmativa o datos no presentes en el corpus. & $\leq 5\%$ & OE4\\
+Recall@4 & Porcentaje de preguntas respondibles en las que al menos un fragmento de referencia aparece entre los cuatro resultados recuperados. & $\geq 85\%$ & OE2\\
+Latencia P95 & Tiempo transcurrido desde el envío hasta la respuesta final del endpoint \texttt{POST /chat}. & $\leq 15$ s & OE1\\
+Contrato JSON & Respuestas que cumplen el esquema y contienen estado, respuesta y arreglo de fuentes cuando corresponde. & $100\%$ & OE1, OE3\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Los resultados de esta tabla se reportarán junto con el número de preguntas evaluadas, los casos fallidos y la evidencia de la fuente. Así, los criterios dejan de depender únicamente de una impresión cualitativa y permiten decidir si el avance cumple, cumple parcialmente o requiere otra iteración.
